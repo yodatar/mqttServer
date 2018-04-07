@@ -1,0 +1,30 @@
+{
+  "name": "mymqtt",
+  "description": "MQTT broker as a module",
+  "main": "server.js",
+  "version": "1.0.0",
+  "license": "MIT",
+  "devDependencies": {
+    "mqtt": "^1.14.1",
+    "mqtt-connection": "^2.1.1"
+  },
+  "dependencies": {
+    "domain": "0.0.1",
+    "express": "^4.16.3",
+    "express-handlebars": "^3.0.0",
+    "http": "0.0.0",
+    "http_request": "^0.1.2",
+    "mongod": "^2.0.0",
+    "mongodb": "^3.0.5",
+    "mosca": "^2.8.0",
+    "mqtt": "^1.14.1",
+    "mqtt-connection": "^2.1.1",
+    "net": "^1.0.2",
+    "path": "^0.12.7",
+    "redis": "^2.8.0",
+    "thingspeakclient": "^0.4.0",
+    "websocket-stream": "^5.1.2",
+    "ws": "^5.0.0"
+  },
+  "optionalDependencies": {}
+}
