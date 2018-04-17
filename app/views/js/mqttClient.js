@@ -8,14 +8,7 @@ $(function () {
     var messagesSel = $('ul.messages');
     var lastMessageSel = $('.lastMessageSel');
 
-    //Sec-WebSocket-Protocol: mqtt
-    //Upgrade: websocket
-    var connectUpgrade = 'ws://';
-    var connectPort = ':4000';
-    var connectServer = '192.168.0.234';
-    //var connectServer = 'localhost';
 
-    var inputUsername = 'admin';
 
     var outputSel = $("#thingSpeakOutput");
 
@@ -31,21 +24,28 @@ $(function () {
 
     var selectableMessage = $('.selectableMessage');
 
-    /**
-     * ADMIN CONNECT
+    /** __________________________________________________________________________________
+     *
+     *      ADMIN CONNECT
      */
-    var btnToggleConnect = $('#btn-toggle-connect');
 
-    var btnToggleThingSpeak = $('#btn-toggle-thingspeak');
-
+    //Sec-WebSocket-Protocol: mqtt
+    //Upgrade: websocket
+    var connectUpgrade = 'ws://';
+    var connectPort = ':4000';
+    var connectServer = '192.168.0.234';
     var txtIpAddress = $("#ip-address");
+    //var connectServer = 'localhost';
+    var inputUsername = 'admin';
+
+    var btnToggleConnect = $('#btn-toggle-connect');
+    var btnToggleThingSpeak = $('#btn-toggle-thingspeak');
 
 
     var btnPublishPair = $('#btn-publish-pair');
     var btnPublishNonpair = $('#btn-publish-nonpair');
     var btnPublishNothandshake = $('#btn-publish-nothandshake');
     var btnDeselectDataMessages = $('#btn-deselect-datamessages');
-
 
     btnToggleConnect.on('click', function (e) {
         e.preventDefault();
@@ -58,7 +58,7 @@ $(function () {
             connectServer = txtIpAddress.val();
 
             client = mqtt.connect(connectUpgrade + connectServer + connectPort, {
-                clean: false,
+                clean: true,
                 clientId: inputUsername,
                 qos: 0
             });
@@ -112,11 +112,6 @@ $(function () {
     });
 
 
-    /**
-     *
-     * @param topic
-     * @param message
-     */
     processMessage = function (topic, message) {
 
         messagesCountSel.html(++messagesCount);
@@ -124,13 +119,12 @@ $(function () {
         try {
             message = JSON.parse(message)
         } catch (e) {
-            console.log(e);
-
+            //console.log(e);
             message = {id: String.fromCharCode.apply(null, message)};
         }
 
         /**
-         * Notifications
+         * Notifications - Log
          */
         if (topic.startsWith("$SYS")) {
 
@@ -148,11 +142,6 @@ $(function () {
         appendLog(topic, message);
     };
 
-    /**
-     *
-     * @param topic
-     * @param message
-     */
     appendLog = function (topic, message) {
         var timestamp = message.id,
             timestampDate = new Date(),
@@ -182,7 +171,7 @@ $(function () {
             timestampDate = new Date(timestamp);
         }
 
-        var isDataMessage = topic.startsWith("data");
+        var isDataMessage = topic.startsWith("data/acc");
 
         var messageClass = isDataMessage ? 'selectableMessage' : '';
 
@@ -220,23 +209,75 @@ $(function () {
     };
 
 
-    /**
-     * PUBLISH MESSAGE
+    /** ___________________________________________________________________________________
+     *
+     *      PUBLISH MESSAGE
      */
     var btnPublish = $('#btn-publish');
     var inputTopic = $('.input-topic');
     var inputMessage = $('.input-message');
 
+
+    function createPairMessage() {
+        if(selectedDataMessages.length == 2) {
+            var msg = {
+                message1: selectedDataMessages[0],
+                message2: selectedDataMessages[1]
+            };
+
+            return JSON.stringify(msg);
+        }
+    }
+
+    function publishMessage(topic, payload) {
+        if(client.connected) {
+            client.publish(topic, payload, 0);
+        }
+    }
+
     btnPublish.on('click', function (e) {
         e.preventDefault();
 
-        client && client.publish(inputTopic, {id: inputUsername, payload: inputMessage.value}, 1);
+        client.publish(inputTopic, {id: inputUsername, payload: inputMessage.value}, 0);
         inputMessage.value = '';
     });
 
 
-    /**
-     * THINGSPEAK CONNECT
+    // PAIR - 0
+    btnPublishPair.on('click', function (e) {
+        e.preventDefault();
+
+        var msg = createPairMessage();
+        if(msg != null ) {
+            publishMessage("data/paired/pair", msg);
+        }
+    });
+
+    // NON PAIR - 1
+    btnPublishNonpair.on('click', function (e) {
+        e.preventDefault();
+
+        var msg = createPairMessage();
+        if(msg != null ) {
+            publishMessage("data/paired/nonpair", msg);
+        }
+    });
+
+    // NOT HANDSHAKE - 2
+    btnPublishNothandshake.on('click', function (e) {
+        e.preventDefault();
+
+        var msg = createPairMessage();
+        if(msg != null ) {
+            publishMessage("data/paired/nothandshake", msg);
+        }
+    });
+
+
+
+    /** ___________________________________________________________________________________
+     *
+     *      THINGSPEAK CONNECT
      */
     btnToggleThingSpeak.on('click', function (e) {
         e.preventDefault();
@@ -255,30 +296,16 @@ $(function () {
                 .addClass("panel-green").removeClass("panel-red");
             //.addClass("btn-disconnect").removeClass("btn-connect");
 
-            /*
-             // Initiate ThingSpeak connection
-             client.publish('admin/thingspeak/start',
-             {id: inputUsername, payload: {clientId: inputUsername, start: true}},
-             function (response) {
 
-             console.log("admin/thingspeak/start", response);
-
-
-             // UI changes
-
-
-
-             });
-             */
 
         }
     });
 
 
-    /**
-     * Pair selection
+    /** _________________________________________________________________________________________
+     *
+     *      Pair selection
      */
-    //client.publish('hi', 'hola', 1);
 
     $("body").on("click", ".selectableMessage", function (e) {
         e.preventDefault();
@@ -300,8 +327,9 @@ $(function () {
             $.each(dataMessages, function (i) {
                 if (dataMessages[i].hasOwnProperty('id') && dataMessages[i].id == searchId) {
                     $this.addClass('selectedMessage');
+
+                    // add message to selected
                     selectedDataMessages.push(dataMessages[i]);
-                    console.log("selectedDataMessages: " + selectedDataMessages.id, selectedDataMessages);
                 }
             });
 
@@ -317,16 +345,21 @@ $(function () {
         }
     }
 
-
     function deselectMessage($this, searchId) {
 
         $.each(selectedDataMessages, function (i) {
             if (selectedDataMessages[i] != null
                 && selectedDataMessages[i].hasOwnProperty('id')
                 && selectedDataMessages[i].id == searchId) {
+
                 $this.removeClass('selectedMessage');
+
+                // remove message from selected
                 selectedDataMessages.splice(selectedDataMessages.indexOf(dataMessages[i]), 1);
-                console.log("selectedDataMessages " + selectedDataMessages.id, selectedDataMessages);
+
+                btnPublishPair.prop('disabled', true);
+                btnPublishNonpair.prop('disabled', true);
+                btnPublishNothandshake.prop('disabled', true);
             }
         });
     }
@@ -337,6 +370,8 @@ $(function () {
     btnDeselectDataMessages.on('click', function (e) {
         e.preventDefault();
 
+        selectedDataMessages = [];
+        $(".selectableMessage").removeClass("selectedMessage");
     });
 
 

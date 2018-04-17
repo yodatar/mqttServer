@@ -1,28 +1,32 @@
+// MQTT core functions
 var mosca = require('mosca');
 var mqtt = require('mqtt');
-var thingSpeak = require('./clients/thingSpeak/thingSpeakClient');
+
+// Database handling
 const mongod = require('mongod');
+
+// thingspeak broker
+var thingSpeak = require('./clients/thingSpeak/thingSpeakClient');
 
 
 /**
- * Local installation of MongoDB database
+ * LOCAL installation of MongoDB database for testing purposes
  * configuration:
  */
 var mongo_con = 'mongodb://localhost:27017/mqtt';
-//var mqttServer_con = '192.168.0.234';
+// default
 var mqttServer_con = '192.168.0.234';
 var mqttServer_port = 4000;
 
 
 /**
- *
- * mqttSettings for Mosca based mqtt server
+ * mqtt setup for Mosca based mqtt server
  */
 var mqttSettings = {
     backend: {
         type: 'mongo',
         url: mongo_con,
-        pubsubCollection: 'acc',
+        pubsubCollection: 'acc', // storing accelerometer data
         mongo: {}
     },
     type: 'mqtt',
@@ -100,19 +104,6 @@ db.open((err) => {
         console.log('Unable to connect to MongoDB.', err);
     }
 });
-
-/*
- class Application {
- constructor() {
- this.Server = createServer({ name: 'fsdf', version: '1.0.0' });
- this.Server.listen(8080);
- this.Broker = new Server(moscaSettings);
- this.Broker.attachHttpServer(this.Server);
- }
- }
-
- export default new Application
- */
 
 
 function processMessage(packet) {

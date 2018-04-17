@@ -2,8 +2,6 @@
 var thingSpeak = require('./thingSpeak');
 var thingSpeakClient;
 
-var lastId='';
-
 
 /**
  * Client name
@@ -11,6 +9,12 @@ var lastId='';
 var clientName = 'thingSpeakClient';
 
 exports.connect = function (ip,port) {
+
+    // TODO
+/*    if (thingSpeakClient.connected) {
+        return;
+    }*/
+
     var mqtt = require('mqtt');
 
     /**
@@ -30,7 +34,7 @@ exports.connect = function (ip,port) {
     thingSpeakClient.on('connect', function () {
 
         // Subscribe to accelerometer data
-        thingSpeakClient.subscribe("data/acc", {qos: 0});
+        thingSpeakClient.subscribe("data/paired/#", {qos: 0});
         thingSpeakClient.subscribe("admin/thingspeak/#", {qos: 2});
 
         //client.publish('topic', 'payload', 1);
@@ -42,17 +46,12 @@ exports.connect = function (ip,port) {
         /**
          * Accelerometer data to be sent to ThingSpeak cloud
          */
-        if (topic.startsWith('data')) {
+        if (topic.startsWith('data/paired')) {
             try {
                 var payload = JSON.parse(message.toString('utf8'));
 
-                // WTF receiving same messages multiple times?!
-                if(lastId != payload.id) {
+                thingSpeak.thingSpeakUpdateBulk(payload, topic);
 
-                    lastId = payload.id;
-                    thingSpeak.thingSpeakUpdateBulk(payload);
-
-                }
             } catch(e) {
                 console.log('thingSpeakUpdateBulk FAILED', e);
             }
