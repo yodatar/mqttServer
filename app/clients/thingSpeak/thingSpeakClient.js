@@ -11,9 +11,9 @@ var clientName = 'thingSpeakClient';
 exports.connect = function (ip,port) {
 
     // TODO
-/*    if (thingSpeakClient.connected) {
+    if (thingSpeakClient != null && thingSpeakClient.connected) {
         return;
-    }*/
+    }
 
     var mqtt = require('mqtt');
 
