@@ -1,23 +1,19 @@
+//
+var mqttServer = require('mosca');
+
 // MQTT core functions
-var mosca = require('mosca');
 var mqtt = require('mqtt');
 
-// Database handling
-const mongod = require('mongod');
 
 // thingspeak broker
 var thingSpeak = require('./clients/thingSpeak/thingSpeakClient');
 
+var mongoDB = require('./clients/mongodb/mongodb');
 
-/**
- * LOCAL installation of MongoDB database for testing purposes
- * configuration:
- */
-var mongo_con = 'mongodb://localhost:27017/mqtt';
 // default
+//var mqttServer_con = '147.175.152.191';
 var mqttServer_con = '192.168.0.234';
-var mqttServer_port = 4000;
-
+var mqttServer_port = 3001;
 
 /**
  * mqtt setup for Mosca based mqtt server
@@ -25,8 +21,8 @@ var mqttServer_port = 4000;
 var mqttSettings = {
     backend: {
         type: 'mongo',
-        url: mongo_con,
-        pubsubCollection: 'acc', // storing accelerometer data
+        url: mongoDB.getMongoConection(),
+        pubsubCollection: mongoDB.getMongoName(), // storing accelerometer data
         mongo: {}
     },
     type: 'mqtt',
@@ -35,8 +31,8 @@ var mqttSettings = {
     json: true,
     host: mqttServer_con,
     persistence: {
-        factory: mosca.persistence.Mongo,
-        url: mongo_con
+        factory: mqttServer.persistence.Mongo,
+        url: mongoDB.getMongoConection()
     },
     http: {
         port: mqttServer_port,
@@ -45,31 +41,20 @@ var mqttSettings = {
     }
 };
 
-// MongoDB server to listen on.
-const db = new mongod({
-    port: 27017,
-    dbpath: "data"
-});
-
-
 var server;
-
-db.open((err) => {
+mongoDB.connect(function (err) {
     if (err === null) {
 
-        // server bound to port 27017.
-        server = new mosca.Server(mqttSettings);
+        server = new mqttServer.Server(mqttSettings);
 
+        server.on('ready', setupCallback);
 
-        server.on('ready', setup);
-
-        function setup() {
+        function setupCallback() {
             console.log(`MQTT server is up and listening on ${mqttServer_port}`);
         }
 
-
         // fired when a message is published
-        server.on('published', function (packet) {
+        server.on('published', (packet) => {
             var clientId = '';
             try {
                 clientId = (packet.payload.clientId != 'undefined') ? ('Client: ' + packet.payload.clientId) : ('Client: ' + packet.clientId);
@@ -82,7 +67,6 @@ db.open((err) => {
             }
 
             processMessage(packet);
-
         });
 
         // fired when a client subscribes
@@ -91,21 +75,23 @@ db.open((err) => {
         });
 
         // fired when a client connects
-        server.on('clientConnected', function (client) {
+        server.on('clientConnected', (client) => {
             console.log('CONNECTED', 'Client:', client.id);
         });
 
         // fired when a client disconnects
-        server.on('clientDisconnected', function (client) {
+        server.on('clientDisconnected', (client) => {
             console.log('DISCONNECTED', 'Client:', client.id);
         });
-
     } else {
-        console.log('Unable to connect to MongoDB.', err);
+        console.log('err', err);
     }
 });
 
 
+/**
+ * Modules initializations in runtime
+ */
 function processMessage(packet) {
 
     // process admin commands

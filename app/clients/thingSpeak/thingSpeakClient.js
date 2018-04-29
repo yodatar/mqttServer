@@ -1,5 +1,5 @@
 
-var thingSpeak = require('./thingSpeak');
+var thingSpeakAdapter = require('./thingSpeakAdapter');
 var thingSpeakClient;
 
 
@@ -50,10 +50,10 @@ exports.connect = function (ip,port) {
             try {
                 var payload = JSON.parse(message.toString('utf8'));
 
-                thingSpeak.thingSpeakUpdateBulk(payload, topic);
+                thingSpeakAdapter.update(payload, topic);
 
             } catch(e) {
-                console.log('thingSpeakUpdateBulk FAILED', e);
+                console.log('update FAILED', e);
             }
 
         }

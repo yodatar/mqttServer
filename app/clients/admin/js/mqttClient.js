@@ -32,7 +32,7 @@ $(function () {
     //Sec-WebSocket-Protocol: mqtt
     //Upgrade: websocket
     var connectUpgrade = 'ws://';
-    var connectPort = ':4000';
+    var connectPort = ':1883';
     var connectServer = '192.168.0.234';
     var txtIpAddress = $("#ip-address");
     //var connectServer = 'localhost';

@@ -8,10 +8,11 @@ var httpRequest = require('http_request');
 
 /**
  * Public custom channel on https://thingspeak.com/channels
+ * https://thingspeak.com/channels/446727
  */
 var writeKey = '7OQSL6WL8V9XUJLI';
 var readKey = '77I5WW0HEWXBPOJZ';
-var channelID = 446727; // https://thingspeak.com/channels/446727
+var channelID = 446727;
 
 
 /**
@@ -75,6 +76,7 @@ function transformToTSChannelMessage(payload, topic) {
         return null;
     }
 
+    //
     commonSize = 100;
 
     /**
@@ -164,7 +166,7 @@ function transformToTSChannelMessage(payload, topic) {
 function resendMessage(payload, topic) {
     console.log("\x1b[33m Resend data in 3 seconds... \x1b[0m");
     setTimeout(function(){
-        exports.thingSpeakUpdateBulk(payload, topic);
+        exports.update(payload, topic);
     }, 3000);
 }
 
@@ -173,7 +175,7 @@ function resendMessage(payload, topic) {
  * one by one
  * @param payload
  */
-exports.thingSpeakUpdate = function (payload) {
+exports.singleUpdate = function (payload) {
     thingSpeakClient.updateChannel(channelID, payload, callBackThingSpeak);
 };
 
@@ -181,7 +183,7 @@ exports.thingSpeakUpdate = function (payload) {
 /**
  * Multiple data feeds packed in one post
  */
-exports.thingSpeakUpdateBulk = function (payload, topic) {
+exports.update = function (payload, topic) {
 
     var payloadTransformed = transformToTSChannelMessage(payload, topic);
 
