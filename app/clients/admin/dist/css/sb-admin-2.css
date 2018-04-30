@@ -477,9 +477,13 @@ li.selectableMessage {
 }
 li.selectableMessage:hover {
   background-color: #5cb85c;
+
 }
 
 li.selectedMessage, li.selectedMessage:hover {
   background-color: #3d8b3d;
+}
 
+li.selectedMessage i, li.selectedMessage:hover i, li.selectedMessage .text-muted , li.selectedMessage:hover .text-muted {
+  color: white;
 }

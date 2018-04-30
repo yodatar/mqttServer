@@ -32,7 +32,7 @@ $(function () {
     //Sec-WebSocket-Protocol: mqtt
     //Upgrade: websocket
     var connectUpgrade = 'ws://';
-    var connectPort = ':1883';
+    var connectPort = ':3001';
     var connectServer = '192.168.0.234';
     var txtIpAddress = $("#ip-address");
     //var connectServer = 'localhost';
@@ -176,7 +176,7 @@ $(function () {
         var messageClass = isDataMessage ? 'selectableMessage' : '';
 
         var mess =
-            '<li class="left clearfix ' + messageClass + ' " data-id="' + message.id + '">' +
+            '<li class="left clearfix ' + messageClass + ' " data-id="' + message.messageId + '">' +
             '<span class="log-img pull-left"><i class="fa fa-lg ' + messageIcon + ' fa-fw"></i></span>' +
             '<div class="log-body clearfix"><div class="header">' +
             '<strong class="primary-font">' + topic + '</strong>' +
@@ -313,7 +313,6 @@ $(function () {
         var $this = $(this);
         var searchId = $this.data('id');
 
-
         if ($this.hasClass('selectedMessage')) {
             deselectMessage($this, searchId);
         } else {
@@ -323,9 +322,11 @@ $(function () {
 
     function selectMessage($this, searchId) {
         // max 2 messages can be selected
+
         if (selectedDataMessages.length < 2) {
             $.each(dataMessages, function (i) {
-                if (dataMessages[i].hasOwnProperty('id') && dataMessages[i].id == searchId) {
+                console.log("messageId",dataMessages[i].messageId, searchId);
+                if (dataMessages[i].hasOwnProperty('messageId') && dataMessages[i].messageId == searchId) {
                     $this.addClass('selectedMessage');
 
                     // add message to selected
@@ -349,8 +350,8 @@ $(function () {
 
         $.each(selectedDataMessages, function (i) {
             if (selectedDataMessages[i] != null
-                && selectedDataMessages[i].hasOwnProperty('id')
-                && selectedDataMessages[i].id == searchId) {
+                && selectedDataMessages[i].hasOwnProperty('messageId')
+                && selectedDataMessages[i].messageId == searchId) {
 
                 $this.removeClass('selectedMessage');
 

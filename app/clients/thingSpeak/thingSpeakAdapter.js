@@ -9,6 +9,8 @@ var httpRequest = require('http_request');
 /**
  * Public custom channel on https://thingspeak.com/channels
  * https://thingspeak.com/channels/446727
+ *
+ * http://api.thingspeak.com/channels/446727/feed.csv?start=2017-07-01&end=2019-07-09
  */
 var writeKey = '7OQSL6WL8V9XUJLI';
 var readKey = '77I5WW0HEWXBPOJZ';
@@ -101,12 +103,12 @@ function transformToTSChannelMessage(payload, topic) {
     for (var i=0; i < commonSize; i++) {
         var t,x,y,z;
         try {
-            t = (new Date(message1.time[i]/1000000)).toISOString(); // microseconds to milliseconds
             x = message1.x[i];
             y = message1.y[i];
             z = message1.z[i];
+            t = new Date(message1.messageId);
         } catch (e) {
-            t = 0;
+            t = new Date();
             x = 0;
             y = 0;
             z = 0;
@@ -115,12 +117,12 @@ function transformToTSChannelMessage(payload, topic) {
             {
                 "created_at": t,
                 "field1": message1.clientId,
-                "field2": message1.id,
+                "field2": message1.messageId,
                 "field3": x,
                 "field4": y,
                 "field5": z,
                 "field6": message2.clientId, // paired client ID
-                "field7": message2.id, // paired message ID
+                "field7": message2.messageId, // paired message ID
                 "field8": pairFlag
             });
     }
@@ -128,12 +130,12 @@ function transformToTSChannelMessage(payload, topic) {
     for (var i=0; i < commonSize; i++) {
         var t,x,y,z;
         try {
-            t = (new Date(message1.time[i]/1000000)).toISOString(); // microseconds to milliseconds
             x = message2.x[i];
             y = message2.y[i];
             z = message2.z[i];
+            t = new Date(message2.messageId);
         } catch (e) {
-            t = 0;
+            t = new Date();
             x = 0;
             y = 0;
             z = 0;
@@ -142,12 +144,12 @@ function transformToTSChannelMessage(payload, topic) {
             {
                 "created_at": t,
                 "field1": message2.clientId,
-                "field2": message2.id,
+                "field2": message2.messageId,
                 "field3": x,
                 "field4": y,
                 "field5": z,
                 "field6": message1.clientId, // paired client ID
-                "field7": message1.id, // paired message ID
+                "field7": message1.messageId, // paired message ID
                 "field8": pairFlag
             });
     }
@@ -189,8 +191,8 @@ exports.update = function (payload, topic) {
 
     if (payloadTransformed != null) {
         try {
-            var messageId1 = new Date(payload.message1.id);
-            var messageId2 = new Date(payload.message2.id);
+            var messageId1 = new Date(payload.message1.messageId);
+            var messageId2 = new Date(payload.message2.messageId);
             console.log('\x1b[36m%s\x1b[0m','Paired data to ThingSpeak: ' +
                 messageId1.toLocaleTimeString() + '.' + messageId1.getMilliseconds(),
                 " - ",
