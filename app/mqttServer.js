@@ -1,13 +1,14 @@
-//
+// mqtt server
 var mqttServer = require('mosca');
 
 // MQTT core functions
 var mqtt = require('mqtt');
 
 
-// thingspeak broker
+// thingspeak client
 var thingSpeak = require('./clients/thingSpeak/thingSpeakClient');
 
+// database client
 var mongoDB = require('./clients/mongodb/mongodb');
 
 // default
@@ -98,7 +99,7 @@ function processMessage(packet) {
     if (packet.topic.startsWith("admin")) {
 
 
-        // Invoke ThingSpeak broker
+        // Invoke ThingSpeak Client
         if (packet.topic.endsWith("thingspeak/start")) {
             thingSpeak.connect(mqttServer_con, mqttServer_port);
         }

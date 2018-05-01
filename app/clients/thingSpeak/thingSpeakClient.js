@@ -37,7 +37,6 @@ exports.connect = function (ip,port) {
         thingSpeakClient.subscribe("data/paired/#", {qos: 0});
         thingSpeakClient.subscribe("admin/thingspeak/#", {qos: 2});
 
-        //client.publish('topic', 'payload', 1);
     });
 
     thingSpeakClient.on('message', function (topic, message) {
